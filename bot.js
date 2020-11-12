@@ -21,10 +21,9 @@ client.on('message', message => {
 	if(command === 'uwu') {
 		let convertedMessage = '';
 		for(const arg of args) {
-			arg.replace(/[lr]/g, 'w');
-			arg.replace(/[LR]/g, 'W');
-			convertedMessage = convertedMessage.concat(arg);
+			const str = arg.replace(/(?<!tt)[lr](?!$)/gi, 'w').toLowerCase();
+			convertedMessage = convertedMessage.concat(str + ' ');
 		}
-		message.channel.send(convertedMessage);
+		message.channel.send(convertedMessage.concat('uwu'));
 	}
 });
