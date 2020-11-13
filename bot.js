@@ -1,12 +1,20 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-
-const config = require('./config.json');
 const { prefix } = require('./config.json');
-require('dotenv').config();
 
-client.login(process.env.BOT_TOKEN);
-client.on('ready', () => {
+const fs = require('fs');
+// create an array from all the js files in the /command directory
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+client.commands = new Discord.Collection();
+for(const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+	// set a collection item,
+	// key: command name, value: exported module
+	client.commands.set(command.name, command);
+}
+
+client.once('ready', () => {
 	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 });
 
@@ -18,12 +26,16 @@ client.on('message', message => {
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const command = args.shift().toLowerCase();
 
-	if(command === 'uwu') {
-		let convertedMessage = '';
-		for(const arg of args) {
-			const str = arg.replace(/(?<!tt)[lr](?!$)/gi, 'w').toLowerCase();
-			convertedMessage = convertedMessage.concat(str + ' ');
-		}
-		message.channel.send(convertedMessage.concat('uwu'));
+	if(!client.commands.has(command)) return;
+
+	try {
+		client.commands.get(command).execute(message, args);
+	}
+	catch(error) {
+		console.error(error);
+		message.reply('Gomenasorry, there was an issue executing that command.');
 	}
 });
+
+require('dotenv').config();
+client.login(process.env.BOT_TOKEN);
