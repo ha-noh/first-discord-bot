@@ -1,6 +1,7 @@
 module.exports = {
 	name: 'uwu',
 	description: 'make any text a non 0% more uwu',
+	args: true,
 	execute(message, args) {
 		let convertedMessage = '';
 		for(const arg of args) {

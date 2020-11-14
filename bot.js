@@ -26,12 +26,20 @@ client.on('message', message => {
 	// the message starts with the bot prefix
 	else if(message.content.startsWith(prefix)) {
 		const args = message.content.slice(prefix.length).trim().split(/ +/);
-		const command = args.shift().toLowerCase();
+		const commandName = args.shift().toLowerCase();
 
-		if(!client.commands.has(command)) return;
+		// if the command doesn't exist, return
+		if(!client.commands.has(commandName)) return;
+
+		const command = client.commands.get(commandName);
+
+		// check if the user provided args if the command requires them
+		if(command.args && !args.length) {
+			return message.channel.send(`You have to provide arguments with that command, ${message.author}!`);
+		}
 
 		try {
-			client.commands.get(command).execute(message, args);
+			command.execute(message, args);
 		}
 		catch(error) {
 			console.error(error);
