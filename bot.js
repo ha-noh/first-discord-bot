@@ -35,7 +35,13 @@ client.on('message', message => {
 
 		// check if the user provided args if the command requires them
 		if(command.args && !args.length) {
-			return message.channel.send(`You have to provide arguments with that command, ${message.author}!`);
+			let reply = (`You have to provide arguments with that command, ${message.author}!`);
+
+			if(command.usage) {
+				reply += `\nUsage: \`${prefix}${command.name} ${command.usage}\``;
+			}
+
+			return message.channel.send(reply);
 		}
 
 		try {

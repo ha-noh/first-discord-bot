@@ -9,16 +9,15 @@ module.exports = {
 		for(let i = 0; i < msg.length; i++) {
 			// the current character can be capitalized
 			if(msg[i].match(/[a-z]/i)) {
-				// const coinFlip = Math.floor(Math.random() * Math.floor(2));
-				modifiedMsg = modifiedMsg.concat(flag ? msg[i].toUpperCase() : msg[i].toLowerCase());
+				modifiedMsg += flag ? msg[i].toUpperCase() : msg[i].toLowerCase();
 				flag = !flag;
 			}
 			// if the character can not be capitalized, append it as is
 			else {
-				modifiedMsg = modifiedMsg.concat(msg[i]);
+				modifiedMsg += msg[i];
 			}
 		}
-		modifiedMsg = modifiedMsg.concat(' lol');
-		message.channel.send(modifiedMsg);
+
+		message.channel.send(modifiedMsg.trim().concat(' lol'));
 	},
 };
