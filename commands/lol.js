@@ -1,8 +1,10 @@
 module.exports = {
 	name:'lol',
+	cooldown: 0,
 	description: 'cheeky bot',
+	guildOnly: false,
 	execute(message) {
-		let modifiedMsg = '> ';
+		let modifiedMsg = '';
 		let flag = false;
 		const msg = message.content.substring(0, message.content.length - 3);
 		// steps through the message and appends each char to the modified string

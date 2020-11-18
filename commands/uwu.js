@@ -1,6 +1,8 @@
 module.exports = {
 	name: 'uwu',
+	cooldown: 1,
 	description: 'make any text a non 0% more uwu',
+	guildOnly: false,
 	args: true,
 	usage: '<text>',
 	execute(message, args) {

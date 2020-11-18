@@ -1,6 +1,7 @@
 const { prefix } = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const cooldowns = new Discord.Collection();
 client.commands = new Discord.Collection();
 
 const fs = require('fs');
@@ -23,39 +24,46 @@ client.on('message', message => {
 	// ignore message if the author is a bot
 	if(message.author.bot) return;
 
-	// the message starts with the bot prefix
-	else if(message.content.startsWith(prefix)) {
-		const args = message.content.slice(prefix.length).trim().split(/ +/);
-		const commandName = args.shift().toLowerCase();
-
-		// if the command doesn't exist, return
-		if(!client.commands.has(commandName)) return;
-
-		const command = client.commands.get(commandName);
-
-		// check if the user provided args if the command requires them
-		if(command.args && !args.length) {
-			let reply = (`You have to provide arguments with that command, ${message.author}!`);
-
-			if(command.usage) {
-				reply += `\nUsage: \`${prefix}${command.name} ${command.usage}\``;
-			}
-
-			return message.channel.send(reply);
-		}
-
-		try {
-			command.execute(message, args);
-		}
-		catch(error) {
-			console.error(error);
-			message.reply('Gomenasorry, there was an issue executing that command.');
-		}
-	}
-
+	// special case for behavior that isn't tied to a user command
 	else if(message.content.endsWith(' lol')) {
 		client.commands.get('lol').execute(message);
 	}
+
+	// the message doesn't start with the bot prefix
+	else if(!message.content.startsWith(prefix)) return;
+
+	const args = message.content.slice(prefix.length).trim().split(/ +/);
+	const commandName = args.shift().toLowerCase();
+
+	// if the command doesn't exist, return
+	if(!client.commands.has(commandName)) return;
+
+	const command = client.commands.get(commandName);
+
+	// if the command is sent through DM, check whether it's applicable there
+	if (command.guildOnly && message.channel.type === 'dm') {
+		return message.reply('I can\'t execute that command inside DMs!');
+	}
+
+	// check if the user provided args (if the command requires them)
+	if(command.args && !args.length) {
+		let reply = (`You have to provide arguments with that command, ${message.author}!`);
+
+		if(command.usage) {
+			reply += `\nUsage: \`${prefix}${command.name} ${command.usage}\``;
+		}
+
+		return message.channel.send(reply);
+	}
+
+	try {
+		command.execute(message, args);
+	}
+	catch(error) {
+		console.error(error);
+		message.reply('Gomenasorry, there was an issue executing that command.');
+	}
+
 });
 
 require('dotenv').config();
