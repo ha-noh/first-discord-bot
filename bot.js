@@ -24,7 +24,7 @@ client.on('message', message => {
 	// ignore message if the author is a bot
 	if(message.author.bot) return;
 
-	// special case for behavior that isn't tied to a user command
+	// special case for behaviors that aren't tied to a user command
 	else if(message.content.endsWith(' lol')) {
 		client.commands.get('lol').execute(message);
 	}
@@ -35,7 +35,7 @@ client.on('message', message => {
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
-	// if the command doesn't exist, return
+	// ignore the command if it doesn't exist
 	if(!client.commands.has(commandName)) return;
 
 	const command = client.commands.get(commandName);
@@ -45,7 +45,7 @@ client.on('message', message => {
 		return message.reply('I can\'t execute that command inside DMs!');
 	}
 
-	// check if the user provided args (if the command requires them)
+	// check if the user has provided any required args
 	if(command.args && !args.length) {
 		let reply = (`You have to provide arguments with that command, ${message.author}!`);
 
@@ -55,6 +55,30 @@ client.on('message', message => {
 
 		return message.channel.send(reply);
 	}
+
+	if (!cooldowns.has(command.name)) {
+		cooldowns.set(command.name, new Discord.Collection());
+	}
+
+	const now = Date.now();
+	const timestamps = cooldowns.get(command.name);
+	// default cooldown value is 3 seconds
+	const cooldownAmount = (command.cooldown || 3) * 1000;
+
+	// if the user has put the command on cooldown, check if the command is still unavailable to them
+	if(timestamps.has(message.author.id)) {
+		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+
+		if (now < expirationTime) {
+			console.log(cooldowns.get(command.name).get(message.author.id));
+			const timeLeft = (expirationTime - now) / 1000;
+			return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
+		}
+	}
+
+	timestamps.set(message.author.id, now);
+	// automatically remove the user cooldown once it expires
+	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
 	try {
 		command.execute(message, args);
