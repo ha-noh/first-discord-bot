@@ -26,6 +26,7 @@ client.on('message', message => {
 
 	// special case for behaviors that aren't tied to a user command
 	else if(message.content.endsWith(' lol')) {
+		// returning from here would prevent commands ending with the phrase 'lol' from executing
 		client.commands.get('lol').execute(message);
 	}
 

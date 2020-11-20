@@ -1,7 +1,7 @@
 module.exports = {
 	name:'lol',
-	cooldown: 0,
 	description: 'cheeky bot',
+	cooldown: 0,
 	guildOnly: false,
 	execute(message) {
 		let modifiedMsg = '';

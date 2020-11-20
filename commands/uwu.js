@@ -1,10 +1,11 @@
 module.exports = {
 	name: 'uwu',
-	cooldown: 1,
+	aliases: ['owo'],
 	description: 'make any text a non 0% more uwu',
-	guildOnly: false,
-	args: true,
 	usage: '<text>',
+	args: true,
+	cooldown: 1,
+	guildOnly: false,
 	execute(message, args) {
 		let convertedMessage = '';
 
