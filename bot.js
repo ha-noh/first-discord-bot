@@ -1,6 +1,6 @@
-const { prefix } = require('./config.json');
+const { prefix, channelID } = require('./config.json');
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] });
 const cooldowns = new Discord.Collection();
 client.commands = new Discord.Collection();
 
@@ -91,6 +91,27 @@ client.on('message', message => {
 		message.reply('Gomenasorry, there was an issue executing that command.');
 	}
 
+});
+
+client.on('messageReactionAdd', async (reaction, user) => {
+	// if the reaction is partial, try to fetch the complete version
+	// reaction.partial vs reaction.message.partial
+	if(reaction.partial) {
+		// catch error if the message being reacted to was deleted
+		try {
+			await reaction.fetch();
+		}
+		catch(error) {
+			console.error('Something went wrong when fetching the message: ', error);
+			return;
+		}
+	}
+
+	// the message has now been cached and is fully available
+	console.log(reaction.message.channel.id);
+
+	// if the reaction didn't occur in the channel specified, return
+	if(reaction.message.channel.id !== channelID) return;
 });
 
 require('dotenv').config();
