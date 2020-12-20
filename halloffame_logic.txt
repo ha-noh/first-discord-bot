@@ -1,0 +1,21 @@
+Goal: Have the bot repost posts from an input channel to an output channel if a number of unique users react to it - 
+	it is essentially an automated hall of fame.
+
+Upon reaction to a Post in the designated input Channel: 
+
+Check if the reaction
+(1) occcured in the correct channel,
+(2) is an image/video post (maybe allow text if it's in a quote?)
+
+Check data Structure for the Post being reacted to, add an entry if it doesn't exist
+(1) if the Post is flagged, then it has already been reposted - return
+(2) update the reaction user List -
+	(a) if it's >= the Threshold, repost it and flag the original Post as done
+	(b) if the number of unique users in the List are less than the Threshold, return
+
+Repost
+(1) Take the url and send a new message in the designated output channel
+(2) Include the original poster's username
+(3) Maybe include some data so that the bot can reconstruct the list of flagged posts even after a restart
+(4) It could be fun to have the bot react to the repost with number emojis == 
+	the number of unique reactors to the original post

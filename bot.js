@@ -59,7 +59,7 @@ client.on('message', message => {
 	}
 
 	// set a cooldown collection for a command if it doesn't already exist
-	if (!cooldowns.has(command.name)) {
+	if(!cooldowns.has(command.name)) {
 		cooldowns.set(command.name, new Discord.Collection());
 	}
 
@@ -108,9 +108,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	}
 
 	// the message has now been cached and is fully available
-	console.log(reaction.message.channel.id);
+	console.log(reaction.message.content);
 
-	// if the reaction didn't occur in the channel specified, return
 	if(reaction.message.channel.id !== channelID) return;
 });
 
