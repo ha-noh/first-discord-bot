@@ -108,10 +108,14 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	}
 
 	// the message has now been cached and is fully available
+	if(reaction.message.channel.id !== channelID || !containsImageOrVideo(reaction.message)) return;
 	console.log(reaction.message.content);
-
-	if(reaction.message.channel.id !== channelID) return;
 });
+
+function containsImageOrVideo(msg) {
+	if (msg.embeds.length || msg.attachments.size) return true;
+	return false;
+}
 
 require('dotenv').config();
 client.login(process.env.BOT_TOKEN);
