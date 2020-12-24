@@ -106,10 +106,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
 			return;
 		}
 	}
-
 	// the message has now been cached and is fully available
 	if(reaction.message.channel.id !== channelID || !containsImageOrVideo(reaction.message)) return;
-	console.log(reaction.message.content);
+	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
 });
 
 function containsImageOrVideo(msg) {

@@ -1,4 +1,5 @@
 {
     "prefix": "!",
-    "channelID": "363895930585612289"
+    "channelID": "363895930585612289",
+    "reactionThreshold": "3"
 }
