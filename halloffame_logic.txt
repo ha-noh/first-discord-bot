@@ -28,11 +28,18 @@ On reaction to a Post in the Input channel:
 	(c) The Url is the identifier that allows the bot to
 		(i) reconstruct the list of flagged posts even after a restart
 		(ii) recognize the connection between a post in the input Channel and its counterpart in the output Channel
-		Note: This means that if multiple posts have the exact same Url, the reactions and Lists will be fragmented and inaccurate. Hence the following "On Post" section
-	(d) It could be fun to have the bot react to the repost with number emojis == 
-		the number of unique reactors to the original post
+		Note: This means that if multiple posts have the exact same Url, the reactions and Lists will be fragmented and inaccurate -
+		hence the following "On Post" section
+	(d) It could be fun to have the bot react to the repost with number emojis to spell out the number of unique reactors;
+		I have to decide whether this counter is built from the Count or if it perpetually just ticks up with every reaction.
 
 On Post to Input Channel:
 (1) Check if its Url appears in the Data structure
 	(a) if true, delete Post and post the error message "Sorry, this image/video has been posted already; your submission has been deleted"
 	(b) else, return
+
+Corner Cases/Issues:
+(1) As previously mentioned, because the Post's embedded url is used as its key, 
+	any duplicate urls within the Input channel will cause issues.
+(2) Any reactions removed from a Post will not be included in the Count if the bot reboots - 
+	the Count will be built only from the reactions on the Post at the bot's startup.

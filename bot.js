@@ -1,4 +1,4 @@
-const { prefix, channelID } = require('./config.json');
+const { prefix, inputChannelID } = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] });
 const cooldowns = new Discord.Collection();
@@ -107,7 +107,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		}
 	}
 	// the message has now been cached and is fully available
-	if(reaction.message.channel.id !== channelID || !containsImageOrVideo(reaction.message)) return;
+	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
 	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
 });
 
