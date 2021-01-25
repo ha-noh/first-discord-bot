@@ -109,6 +109,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	// the message has now been cached and is fully available
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
 	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
+
+	require('./commands/hallOfFame.js').execute();
 });
 
 function containsImageOrVideo(msg) {
