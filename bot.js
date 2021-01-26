@@ -10,8 +10,6 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 
 for(const file of commandFiles) {
 	const command = require(`./commands/${file}`);
-	// set a collection item,
-	// key: command name, value: exported module
 	client.commands.set(command.name, command);
 }
 
@@ -19,24 +17,18 @@ client.once('ready', () => {
 	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 });
 
-// command ideas: (1) uwu-ifier (2) insert emojis (take args) in between a message to turn it into pasta (3) tHiS THinG
 client.on('message', message => {
-	// ignore message if the author is a bot
 	if(message.author.bot) return;
 
-	// special case for behaviors that aren't tied to a user command
 	else if(message.content.endsWith(' lol')) {
 		// returning from here would prevent commands ending with the phrase 'lol' from executing
 		client.commands.get('lol').execute(message);
 	}
 
-	// the message doesn't start with the bot prefix
 	else if(!message.content.startsWith(prefix)) return;
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const commandName = args.shift().toLowerCase();
-
-	// check if the command was called with an alias
 	const command = client.commands.get(commandName)
 		|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
@@ -65,7 +57,6 @@ client.on('message', message => {
 
 	const now = Date.now();
 	const timestamps = cooldowns.get(command.name);
-	// default cooldown value is 3 seconds
 	const cooldownAmount = (command.cooldown || 3) * 1000;
 
 	// if the user has put the command on cooldown, check if the command is still unavailable to them
@@ -73,7 +64,6 @@ client.on('message', message => {
 		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
 
 		if (now < expirationTime) {
-			console.log(cooldowns.get(command.name).get(message.author.id));
 			const timeLeft = (expirationTime - now) / 1000;
 			return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
 		}
