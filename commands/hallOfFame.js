@@ -1,5 +1,5 @@
 module.exports = {
-	execute() {
-		console.log('In module now');
+	execute(reaction, user) {
+		console.log(`Reaction: ${reaction.message} User: ${user.username}`);
 	},
 };

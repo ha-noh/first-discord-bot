@@ -100,7 +100,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
 	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
 
-	require('./commands/hallOfFame.js').execute();
+	require('./commands/hallOfFame.js').execute(reaction, user);
 });
 
 function containsImageOrVideo(msg) {
