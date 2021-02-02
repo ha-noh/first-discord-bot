@@ -1,9 +1,8 @@
 const { prefix, inputChannelID } = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] });
-client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
-const hallOfFame = new Discord.Collection();
+client.commands = new Discord.Collection();
 
 const fs = require('fs');
 // create an array of file names in the /command directory
@@ -100,8 +99,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	// the message has now been cached and is fully available
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
 	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
-	require('./commands/hallOfFame.js').execute(reaction, hallOfFame);
-	console.log(hallOfFame.size);
+
+	require('./commands/hallOfFame.js').execute(reaction, user);
 });
 
 function containsImageOrVideo(msg) {
