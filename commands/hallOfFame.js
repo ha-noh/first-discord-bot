@@ -1,5 +1,6 @@
 module.exports = {
-	execute(reaction, user) {
-		console.log(`Reaction: ${reaction.message} User: ${user.username}`);
+	execute(reaction, hof) {
+		console.log(`Reaction: ${reaction.message}`);
+		hof.set(reaction.message.id, 'test');
 	},
 };
