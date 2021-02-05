@@ -6,7 +6,7 @@ On bootup:
 	(a) the Url of their embedded media serves as the key
 	(b) the value is an object, which also contains three values:
 		(i) a Flag to signify that it has been reposted to the Output channel, set to true
-		(ii) a List of its unique reactors (this can be built from the emoji reactions on the Output post)
+		(ii) a List of its unique reactors, set to NULL
 		(iii) a Count of the total number of reactions
 		
 On reaction to a Post in the Input channel:
@@ -18,9 +18,10 @@ On reaction to a Post in the Input channel:
 	(a) if there is no entry, add one and set its Flag to false, its Count to 1, and create a List to record the reaction
 	(b) else check if the Reactor appears in the List of unique reactors
 		(i) Count++
-		(ii) add the Reactor to the List if it is not already listed; 
+		(ii) if Flag is false && Reactor is not in the List, add the Reactor to the List
 			(1) if the length of the List >= the Threshold, Repost and set Flag to true
 			(2) else if the length is less than the Threshold, return
+		(iii) else if Flag is true, update the emoji reactions on the Output post
 
 (3) Repost
 	(a) Copy the Url and send a new message containing the Url in the Output channel
@@ -44,3 +45,6 @@ Corner Cases/Issues:
 (2) Any reactions removed from a Post will not be included in the Count if the bot reboots - 
 	the Count will be built only from the reactions on the Post at the bot's startup.
 (3) The reaction listener needs to wait for the Collection to be constructed before executing
+(4) What happens when a post is deleted from the Output channel? As of now this would prevent
+	any future reactions on the Input post from having any effect.
+(5) A db would be a better way to store the Collection and List contents; more performant and persistent

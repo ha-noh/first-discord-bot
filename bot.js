@@ -1,4 +1,4 @@
-const { prefix, inputChannelID } = require('./config.json');
+const { prefix, inputChannelID, outputChannelID } = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] });
 client.commands = new Discord.Collection();
@@ -16,7 +16,19 @@ for(const file of commandFiles) {
 
 client.once('ready', () => {
 	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
+	client.channels.fetch(outputChannelID)
+		.then(fetchMessages)
+		.then(buildHof)
+		.catch(console.error);
 });
+
+function fetchMessages(channel) {
+	return channel.messages.fetch();
+}
+
+function buildHof(messages) {
+	console.log(messages.filter(msg => msg.attachments.size).size);
+}
 
 client.on('message', message => {
 	if(message.author.bot) return;
@@ -104,8 +116,10 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	console.log(hallOfFame.size);
 });
 
+// all messages have truthy values for the 'embeds' and 'attachments' properties;
+// messages with image attachments don't necesarily have embeds
 function containsImageOrVideo(msg) {
-	if (msg.embeds.length || msg.attachments.size) return true;
+	if(msg.embeds.length || msg.attachments.size) return true;
 	return false;
 }
 
