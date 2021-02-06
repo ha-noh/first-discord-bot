@@ -27,7 +27,7 @@ function fetchMessages(channel) {
 }
 
 function buildHof(messages) {
-	console.log(messages.filter(msg => msg.attachments.size).size);
+	console.log(messages.filter(msg => containsImageOrVideo(msg)).size);
 }
 
 client.on('message', message => {
@@ -113,14 +113,12 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
 	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
 	require('./commands/hallOfFame.js').execute(reaction, hallOfFame);
-	console.log(hallOfFame.size);
 });
 
-// all messages have truthy values for the 'embeds' and 'attachments' properties;
+// all messages have the 'embeds' and 'attachments' properties, regardless of their contents;
 // messages with image attachments don't necesarily have embeds
 function containsImageOrVideo(msg) {
-	if(msg.embeds.length || msg.attachments.size) return true;
-	return false;
+	return Boolean(msg.embeds.length || msg.attachments.size);
 }
 
 require('dotenv').config();
