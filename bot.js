@@ -15,20 +15,12 @@ for(const file of commandFiles) {
 }
 
 client.once('ready', () => {
-	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 	client.channels.fetch(outputChannelID)
 		.then(fetchMessages)
 		.then(buildHof)
 		.catch(console.error);
+	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 });
-
-function fetchMessages(channel) {
-	return channel.messages.fetch();
-}
-
-function buildHof(messages) {
-	console.log(messages.filter(msg => containsImageOrVideo(msg)).size);
-}
 
 client.on('message', message => {
 	if(message.author.bot) return;
@@ -97,10 +89,8 @@ client.on('message', message => {
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-	// if the reaction is partial, try to fetch the complete version
 	// reaction.partial vs reaction.message.partial
 	if(reaction.partial) {
-		// catch error if the message being reacted to was deleted
 		try {
 			await reaction.fetch();
 		}
@@ -115,8 +105,23 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	require('./commands/hallOfFame.js').execute(reaction, hallOfFame);
 });
 
-// all messages have the 'embeds' and 'attachments' properties, regardless of their contents;
-// messages with image attachments don't necesarily have embeds
+function fetchMessages(channel) {
+	return channel.messages.fetch();
+}
+
+function buildHof(messages) {
+	const reposts = messages.filter(msg => containsImageOrVideo(msg));
+	console.log(reposts.size);
+	for(const [, repost] of reposts) {
+		const url = repost.attachments.size ? repost.attachments.first().url : repost.embeds[0].url;
+		const hofObject = { flag: true, list: null, count: 0 };
+		hallOfFame.set(url, hofObject);
+	}
+	console.log('collection size after initialization:' + hallOfFame.size);
+}
+
+// embeds and attachments properties will never be null, even if they're empty
+// the image preview created by attachments are not considered embeds
 function containsImageOrVideo(msg) {
 	return Boolean(msg.embeds.length || msg.attachments.size);
 }
