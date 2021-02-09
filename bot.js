@@ -18,7 +18,8 @@ client.once('ready', () => {
 	client.channels.fetch(outputChannelID)
 		.then(fetchMessages)
 		.then(buildHof)
-		.catch(console.error);
+		.catch(console.error)
+		.finally(onHofBuild);
 	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 });
 
@@ -88,22 +89,24 @@ client.on('message', message => {
 
 });
 
-client.on('messageReactionAdd', async (reaction, user) => {
-	// reaction.partial vs reaction.message.partial
-	if(reaction.partial) {
-		try {
-			await reaction.fetch();
+function onHofBuild() {
+	client.on('messageReactionAdd', async (reaction, user) => {
+		// reaction.partial vs reaction.message.partial
+		if(reaction.partial) {
+			try {
+				await reaction.fetch();
+			}
+			catch(error) {
+				console.error('Something went wrong when fetching the message: ', error);
+				return;
+			}
 		}
-		catch(error) {
-			console.error('Something went wrong when fetching the message: ', error);
-			return;
-		}
-	}
-	// the message has now been cached and is fully available
-	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
-	console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
-	require('./commands/hallOfFame.js').execute(reaction, hallOfFame);
-});
+		// the message has now been cached and is fully available
+		if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
+		console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
+		require('./commands/hallOfFame.js').execute(reaction, hallOfFame);
+	});
+}
 
 function fetchMessages(channel) {
 	return channel.messages.fetch();
@@ -112,7 +115,7 @@ function fetchMessages(channel) {
 function buildHof(messages) {
 	const reposts = messages.filter(msg => containsImageOrVideo(msg));
 	console.log(reposts.size);
-	for(const [, repost] of reposts) {
+	for(const repost of reposts.values()) {
 		const url = repost.attachments.size ? repost.attachments.first().url : repost.embeds[0].url;
 		const hofObject = { flag: true, list: null, count: 0 };
 		hallOfFame.set(url, hofObject);
