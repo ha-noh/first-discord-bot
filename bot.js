@@ -4,6 +4,7 @@ const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] })
 client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
 const hallOfFame = new Discord.Collection();
+const Hof = require('./commands/hallOfFame.js');
 
 const fs = require('fs');
 // create an array of file names in the /command directory
@@ -40,12 +41,10 @@ client.on('message', message => {
 
 	if(!command) return;
 
-	// if the command is sent through DM, check whether it's applicable there
 	if (command.guildOnly && message.channel.type === 'dm') {
 		return message.reply('I can\'t execute that command inside DMs!');
 	}
 
-	// check if the user has provided any required args
 	if(command.args && !args.length) {
 		let reply = (`You have to provide arguments with that command, ${message.author}!`);
 
@@ -103,8 +102,8 @@ function onHofBuild() {
 		}
 		// the message has now been cached and is fully available
 		if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
-		console.log(`The message '${reaction.message.content}' has id ${reaction.message.id}`);
-		require('./commands/hallOfFame.js').execute(reaction, hallOfFame);
+		Hof.execute(reaction, hallOfFame);
+		console.log(hallOfFame.size);
 	});
 }
 
@@ -116,11 +115,11 @@ function buildHof(messages) {
 	const reposts = messages.filter(msg => containsImageOrVideo(msg));
 	console.log(reposts.size);
 	for(const repost of reposts.values()) {
-		const url = repost.attachments.size ? repost.attachments.first().url : repost.embeds[0].url;
+		const url = Hof.getURLFromMsg(repost);
 		const hofObject = { flag: true, list: null, count: 0 };
 		hallOfFame.set(url, hofObject);
 	}
-	console.log('collection size after initialization:' + hallOfFame.size);
+	console.log('collection size after initialization: ' + hallOfFame.size);
 }
 
 // embeds and attachments properties will never be null, even if they're empty
