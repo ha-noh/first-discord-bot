@@ -9,3 +9,4 @@ This is all a test. What makes a Discord bot tick?
 Node.js and these subsequent packages:
 * discord.js
 * dotenv
+* sqlite3
