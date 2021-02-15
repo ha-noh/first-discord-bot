@@ -19,8 +19,7 @@ client.once('ready', () => {
 	client.channels.fetch(outputChannelID)
 		.then(fetchMessages)
 		.then(buildHof)
-		.catch(console.error)
-		.finally(onHofBuild);
+		.catch(console.error);
 	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 });
 
@@ -88,24 +87,33 @@ client.on('message', message => {
 
 });
 
-function onHofBuild() {
-	client.on('messageReactionAdd', async (reaction, user) => {
-		// reaction.partial vs reaction.message.partial
-		if(reaction.partial) {
-			try {
-				await reaction.fetch();
-			}
-			catch(error) {
-				console.error('Something went wrong when fetching the message: ', error);
-				return;
-			}
+client.on('messageReactionAdd', async (reaction, user) => {
+	// reaction.partial vs reaction.message.partial
+	if(reaction.partial) {
+		try {
+			await reaction.fetch();
 		}
-		// the message has now been cached and is fully available
-		if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
-		Hof.execute(reaction, hallOfFame);
-		console.log(hallOfFame.size);
-	});
-}
+		catch(error) {
+			console.error('Something went wrong when fetching the message: ', error);
+			return;
+		}
+	}
+
+	if(user.partial) {
+		try {
+			await user.fetch();
+		}
+		catch(error) {
+			console.error('Something went wrong when fetching the user: ', error);
+			return;
+		}
+	}
+	// the message has now been cached and is fully available
+	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
+	Hof.execute(reaction, hallOfFame);
+	console.log('size is now ' + hallOfFame.size);
+	console.log('userid: ' + user.id + ' usertag: ' + user.tag);
+});
 
 function fetchMessages(channel) {
 	return channel.messages.fetch();
@@ -113,7 +121,6 @@ function fetchMessages(channel) {
 
 function buildHof(messages) {
 	const reposts = messages.filter(msg => containsImageOrVideo(msg));
-	console.log(reposts.size);
 	for(const repost of reposts.values()) {
 		const url = Hof.getURLFromMsg(repost);
 		const hofObject = { flag: true, list: null, count: 0 };
