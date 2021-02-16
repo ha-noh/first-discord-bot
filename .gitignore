@@ -2,3 +2,4 @@
 .eslintrc.json
 node_modules/
 HoF_history.txt
+db/

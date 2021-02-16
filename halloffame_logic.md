@@ -1,10 +1,13 @@
 # Goal: Have the bot repost posts from an input channel to an output channel if enough unique users react to it - it is essentially an automated hall of fame.
 
 # Data storage:
-1. There are two tables in the DB; both use the attachment/embed Url as their keys
-	1. The "List": the first table has two columns and tracks every unique user that reacts to a Post
+1. There are two tables in the DB; the Collection uses the attachment/embed Url as a primary key, while the List uses it as a foreign key
+	1. The "List": the first table has three columns
+		- Url (foreign key)
+		- username of Reactor
+		- reaction emoji used
 	2. The "Collection": the second table has three columns
-		- its Url
+		- its Url (primary key)
 		- a boolean Flag to track whether it's been reposted to the Output channel
 		- a Count of the total number of reactions
 		

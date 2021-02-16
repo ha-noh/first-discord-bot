@@ -3,38 +3,32 @@ const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] });
 client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
-const hallOfFame = new Discord.Collection();
-const Hof = require('./commands/hallOfFame.js');
+
+const hallOfFame = require('./commands/hallOfFame.js');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('db/halloffame.db', (err) => {
 	if(err) return console.error(err.message);
 	console.log('Connected to the halloffame database.');
 });
-
-db.close((err) => {
-	if(err) return console.error(err.message);
-	console.log('Closed the database connection');
-});
+createHofTables();
 
 const fs = require('fs');
-// create an array of file names in the /command directory
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
 for(const file of commandFiles) {
 	const command = require(`./commands/${file}`);
 	client.commands.set(command.name, command);
 }
 
 client.once('ready', () => {
-	client.channels.fetch(outputChannelID)
-		.then(fetchMessages)
-		.then(buildHof)
-		.catch(console.error);
 	console.log(`Pikamee is live! Use '${prefix}' to summon me.`);
 });
 
 client.on('message', message => {
 	if(message.author.bot) return;
+
+	else if(message.channel.id === inputChannelID && containsImageOrVideo(message)) {
+		insertIntoDb(message);
+	}
 
 	else if(message.content.endsWith(' lol')) {
 		// returning from here would prevent commands ending with the phrase 'lol' from executing
@@ -120,25 +114,41 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	}
 	// the message has now been cached and is fully available
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
-	Hof.execute(reaction, hallOfFame);
-	console.log('size is now ' + hallOfFame.size);
+	hallOfFame.execute(reaction, db);
 	console.log('userid: ' + user.id + ' usertag: ' + user.tag);
 });
 
-function fetchMessages(channel) {
-	return channel.messages.fetch();
+function insertIntoDb(msg) {
+	db.run('INSERT INTO posts VALUES (?, ?, ?)', [hallOfFame.getURLFromMsg(msg), 0, 0], (err)=>{
+		if(err) return console.error(err.message);
+		console.log(`A row has been inserted with rowid ${this.lastID}`);
+	});
 }
 
-function buildHof(messages) {
-	const reposts = messages.filter(msg => containsImageOrVideo(msg));
-	for(const repost of reposts.values()) {
-		const url = Hof.getURLFromMsg(repost);
-		const hofObject = { flag: true, list: null, count: 0 };
-		hallOfFame.set(url, hofObject);
-	}
-	console.log('collection size after initialization: ' + hallOfFame.size);
+function createHofTables() {
+	const postsSQL =
+	`CREATE TABLE IF NOT EXISTS posts (
+		url TEXT PRIMARY KEY,
+		flag INTEGER NOT NULL,
+		count INTEGER NOT NULL
+	)`;
+	const reactionsSQL =
+	`CREATE TABLE IF NOT EXISTS reactions (
+		url TEXT NOT NULL,
+		username TEXT NOT NULL,
+		emoji TEXT NOT NULL,
+		FOREIGN KEY (url)
+			REFERENCES posts (url)
+			ON DELETE CASCADE
+			ON UPDATE NO ACTION
+	)`;
+	db.run(postsSQL, (err) => {
+		if(err) return console.error(err.message);
+	});
+	db.run(reactionsSQL, (err) => {
+		if(err) return console.error(err.message);
+	});
 }
-
 // embeds and attachments properties will never be null, even if they're empty
 // the image preview created by attachments are not considered embeds
 function containsImageOrVideo(msg) {
