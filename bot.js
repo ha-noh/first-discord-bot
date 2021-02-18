@@ -92,7 +92,6 @@ client.on('message', message => {
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-	// reaction.partial vs reaction.message.partial
 	if(reaction.partial) {
 		try {
 			await reaction.fetch();
@@ -113,9 +112,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		}
 	}
 	// the message has now been cached and is fully available
+	console.log('usertag: ' + user.tag);
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
-	hallOfFame.execute(reaction, db);
-	console.log('userid: ' + user.id + ' usertag: ' + user.tag);
+	hallOfFame.execute(reaction, user, db);
 });
 
 function insertIntoDb(msg) {
@@ -142,9 +141,11 @@ function createHofTables() {
 			ON DELETE CASCADE
 			ON UPDATE NO ACTION
 	)`;
+
 	db.run(postsSQL, (err) => {
 		if(err) return console.error(err.message);
 	});
+
 	db.run(reactionsSQL, (err) => {
 		if(err) return console.error(err.message);
 	});

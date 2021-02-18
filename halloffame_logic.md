@@ -13,11 +13,11 @@
 		
 # On reaction to a Post in the Input channel:
 1. Check if the reaction
-	- occcured in the correct channel,
+	- occurred in the correct channel,
 	- is on an image/video post (maybe allow text if it's in a quote?)
 
 2. Check the Collection for the Post (via its Url)
-	1. if there is no entry, add one and set its Flag to false, its Count to 1, and add the reactor to the List
+	1. if there is no entry, add one and set its Flag to false, its Count to 1, and add the reactor to the "List"
 	2. else check if the Reactor appears in the List
 		1. Count++
 		2. if Flag is false && Reactor is not in the List, add the Reactor to the List
