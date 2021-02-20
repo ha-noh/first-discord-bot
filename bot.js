@@ -97,8 +97,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 			await reaction.fetch();
 		}
 		catch(error) {
-			console.error('Something went wrong when fetching the message: ', error);
-			return;
+			return console.error('Something went wrong when fetching the message: ', error);
 		}
 	}
 
@@ -107,8 +106,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 			await user.fetch();
 		}
 		catch(error) {
-			console.error('Something went wrong when fetching the user: ', error);
-			return;
+			return console.error('Something went wrong when fetching the user: ', error);
 		}
 	}
 	// the message has now been cached and is fully available
