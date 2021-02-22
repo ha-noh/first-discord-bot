@@ -2,14 +2,17 @@
 
 # Data storage:
 1. There are two tables in the DB; the Collection uses the attachment/embed Url as a primary key, while the List uses it as a foreign key
-	1. The "List": the first table has three columns
+	1. The "List": the first table has five columns
 		- Url (foreign key)
-		- username of Reactor
+		- user id of Reactor
+		- user tag of Reactor
 		- reaction emoji used
 	2. The "Collection": the second table has three columns
 		- its Url (primary key)
 		- a boolean Flag to track whether it's been reposted to the Output channel
 		- a Count of the total number of reactions
+		- user id of Post's author
+		- user tag of Post's author
 		
 # On reaction to a Post in the Input channel:
 1. Check if the reaction
@@ -20,8 +23,8 @@
 	1. if there is no entry, add one and set its Flag to false, its Count to 1, and add the reactor to the "List"
 	2. else check if the Reactor appears in the List
 		1. Count++
-		2. if Flag is false && Reactor is not in the List, add the Reactor to the List
-			- if the length of the List >= the Threshold, repost and set Flag to true
+		2. if !Flag, add the Reactor to the List
+			- if the (number of unique reactors in the List) >= the Threshold, repost and set Flag to true
 		3. else if Flag is true, update the emoji reactions on the Output post
 
 3. Repost

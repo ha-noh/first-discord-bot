@@ -110,13 +110,13 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		}
 	}
 	// the message has now been cached and is fully available
-	console.log('usertag: ' + user.tag);
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
 	hallOfFame.execute(reaction, user, db);
 });
 
 function insertIntoDb(msg) {
-	db.run('INSERT INTO posts VALUES (?, ?, ?)', [hallOfFame.getURLFromMsg(msg), 0, 0], (err)=>{
+	const values = [hallOfFame.getURLFromMsg(msg), 0, 0, msg.author.id, msg.author.tag];
+	db.run('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', values, (err)=>{
 		if(err) return console.error(err.message);
 		console.log(`A row has been inserted with rowid ${this.lastID}`);
 	});
@@ -127,12 +127,15 @@ function createHofTables() {
 	`CREATE TABLE IF NOT EXISTS posts (
 		url TEXT PRIMARY KEY,
 		flag INTEGER NOT NULL,
-		count INTEGER NOT NULL
+		count INTEGER NOT NULL,
+		userid TEXT NOT NULL,
+		usertag TEXT NOT NULL
 	)`;
 	const reactionsSQL =
 	`CREATE TABLE IF NOT EXISTS reactions (
 		url TEXT NOT NULL,
 		userid TEXT NOT NULL,
+		usertag TEXT NOT NULL,
 		emoji TEXT NOT NULL,
 		FOREIGN KEY (url)
 			REFERENCES posts (url)

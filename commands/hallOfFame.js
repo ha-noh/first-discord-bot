@@ -12,7 +12,7 @@ module.exports = {
 
 			if(!row) {
 				insertPost();
-				insertReaction(user.id, reaction.emoji.name);
+				insertReaction(user.id, user.tag, reaction.emoji.name);
 			}
 			else {
 				checkRepostConditions(row);
@@ -20,33 +20,48 @@ module.exports = {
 		});
 
 		function insertPost() {
-			db.run('INSERT INTO posts VALUES (?, ?, ?)', [url, 0, 1], (err) => {
+			const values = [url, 0, 0, reaction.message.author.id, reaction.message.author.tag];
+			db.run('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', values, (err) => {
 				if(err) return console.error(err.message);
 				console.log(`A row has been inserted into posts with rowid ${this.lastID}`);
 			});
 		}
 
-		function insertReaction(id, emoji) {
-			db.run('INSERT INTO reactions VALUES (?, ?, ?)', [url, id, emoji], (err) => {
+		function insertReaction(id, tag, emoji, cb) {
+			const values = [url, id, tag, emoji];
+			db.run('INSERT INTO reactions VALUES (?, ?, ?, ?)', values, (err) => {
 				if(err) return console.error(err.message);
 				console.log(`A row has been inserted into reactions with rowid ${this.lastID}`);
+				// update count in posts table
+				db.get(selectPost, [url], (err, row) => {
+					if(err) return console.error(err.message);
+					updatePostRecord(0, row.count + 1);
+				});
+
+				if(cb) cb();
+			});
+		}
+
+		function updatePostRecord(flag, count) {
+			const updatePost = `UPDATE posts
+								SET flag = ?,
+									count = ?
+								WHERE url = ?`;
+
+			db.run(updatePost, [flag, count, url], (err) => {
+				if(err) return console.error(err.message);
 			});
 		}
 
 		function checkRepostConditions(postRecord) {
-			if(postRecord) return console.log('row.count: ' + postRecord.count);
 			const count = postRecord.count++;
 			const flag = postRecord.flag;
-			const selectReaction = `SELECT *
-									FROM reactions
-									WHERE userid = ?`;
 			// if Flag is false && Reactor is not in the List, add the Reactor to the List
 			if(!flag) {
-				db.get(selectReaction, [user.id], (err, row) => {
-					if(err) return console.error(err.message);
-					if(row) return;
-					insertReaction(user.id, reaction.emoji.name);
-					// if the length of the List >= the Threshold, repost and set Flag to true
+				insertReaction(user.id, user.tag, reaction.emoji.name, () => {
+					if(getReactorCount() >= reactionThreshold) {
+						repost();
+					}
 				});
 			}
 			// else if Flag is true, update the emoji reactions on the Output post
@@ -55,8 +70,24 @@ module.exports = {
 			}
 		}
 
+		function getReactorCount() {
+			const selectRows = `SELECT DISTINCT userid
+								FROM reactions
+								WHERE url = ?`;
+
+			db.all(selectRows, [url], (err, rows) => {
+				if(err) return console.error(err.message);
+				console.log('rows.length: ' + rows.length);
+				return rows.length;
+			});
+		}
+
 		function updateEmoji() {
-			return;
+			console.log(url + ' emoji updated');
+		}
+
+		function repost() {
+			console.log(url + ' reposted');
 		}
 	},
 	getURLFromMsg(msg) {
