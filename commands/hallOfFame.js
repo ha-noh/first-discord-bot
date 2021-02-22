@@ -1,43 +1,61 @@
 module.exports = {
 	execute(reaction, user, db) {
+		const { outputChannelID, reactionThreshold } = require('../config.json');
 		console.log(`Reaction: ${reaction.emoji.name} on ${reaction.message}`);
 		const url = this.getURLFromMsg(reaction.message);
-		const sql = `SELECT *
-					 FROM posts
-					 WHERE url = ?`;
+		const selectPost = `SELECT *
+							FROM posts
+							WHERE url = ?`;
 
-		db.get(sql, [url], (err, row) => {
+		db.get(selectPost, [url], (err, row) => {
 			if(err) return console.error(err.message);
 
 			if(!row) {
-				insertRecord();
+				insertPost();
+				insertReaction(user.id, reaction.emoji.name);
 			}
 			else {
 				checkRepostConditions(row);
 			}
 		});
 
-		function insertRecord() {
+		function insertPost() {
 			db.run('INSERT INTO posts VALUES (?, ?, ?)', [url, 0, 1], (err) => {
 				if(err) return console.error(err.message);
-				console.log(`A row has been inserted with rowid ${this.lastID}`);
+				console.log(`A row has been inserted into posts with rowid ${this.lastID}`);
 			});
+		}
 
-			db.run('INSERT INTO reactions VALUES (?, ?, ?)', [url, user.tag, reaction.emoji], (err) => {
+		function insertReaction(id, emoji) {
+			db.run('INSERT INTO reactions VALUES (?, ?, ?)', [url, id, emoji], (err) => {
 				if(err) return console.error(err.message);
+				console.log(`A row has been inserted into reactions with rowid ${this.lastID}`);
 			});
 		}
 
-		function checkRepostConditions(row) {
-			const count = row.count++;
+		function checkRepostConditions(postRecord) {
+			if(postRecord) return console.log('row.count: ' + postRecord.count);
+			const count = postRecord.count++;
+			const flag = postRecord.flag;
+			const selectReaction = `SELECT *
+									FROM reactions
+									WHERE userid = ?`;
 			// if Flag is false && Reactor is not in the List, add the Reactor to the List
-			// if the length of the List >= the Threshold, repost and set Flag to true
-			// else if the length is less than the Threshold, return
+			if(!flag) {
+				db.get(selectReaction, [user.id], (err, row) => {
+					if(err) return console.error(err.message);
+					if(row) return;
+					insertReaction(user.id, reaction.emoji.name);
+					// if the length of the List >= the Threshold, repost and set Flag to true
+				});
+			}
 			// else if Flag is true, update the emoji reactions on the Output post
-			return;
+			else {
+				updateEmoji();
+			}
 		}
 
-		function insertIfNotExist() {
+		function updateEmoji() {
 			return;
 		}
 	},

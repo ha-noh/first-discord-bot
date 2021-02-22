@@ -22,7 +22,6 @@
 		1. Count++
 		2. if Flag is false && Reactor is not in the List, add the Reactor to the List
 			- if the length of the List >= the Threshold, repost and set Flag to true
-			- else if the length is less than the Threshold, return
 		3. else if Flag is true, update the emoji reactions on the Output post
 
 3. Repost
@@ -49,5 +48,5 @@
 The marked issues are fixed by implementing a database over a non-permanent data structure.
 
 ## User Fetch Issue
-The user parameter is undefined in the `messagereactionAdd` event listener UNTIL a new post is made while the bot is awake - 
-then all subsequent reactions will have a fetchable user parameter. This behavior is unrelated to the message event listener and occurs even when said listener is not present.
+~~The user parameter is undefined in the `messagereactionAdd` event listener UNTIL a new post is made while the bot is awake - 
+then all subsequent reactions will have a fetchable user parameter. This behavior is unrelated to the message event listener and occurs even when said listener is not present.~~ Updating the discord.js version to 12.5.1 seems to have fixed the issue.

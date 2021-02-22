@@ -132,7 +132,7 @@ function createHofTables() {
 	const reactionsSQL =
 	`CREATE TABLE IF NOT EXISTS reactions (
 		url TEXT NOT NULL,
-		username TEXT NOT NULL,
+		userid TEXT NOT NULL,
 		emoji TEXT NOT NULL,
 		FOREIGN KEY (url)
 			REFERENCES posts (url)
