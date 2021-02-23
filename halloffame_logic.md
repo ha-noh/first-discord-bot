@@ -13,6 +13,7 @@
 		- a Count of the total number of reactions
 		- user id of Post's author
 		- user tag of Post's author
+		- the Post's id
 		
 # On reaction to a Post in the Input channel:
 1. Check if the reaction
@@ -47,6 +48,7 @@
 3. The reaction listener needs to wait for the Collection to be constructed before executing
 4. What happens when a post is deleted from the Output channel? As of now this would prevent any future reactions on the Input post from having any effect.
 5. ~~A db would be a better way to store the Collection and List contents; more performant and persistent - fetching messages to build the Collection is limited because only a maximum of 50 messages can be fetched.~~
+6. Due to its interior logic, a Threshold of 1 won't always trigger a repost off its first reaction. To be more specific: the first reaction on a Post not recorded in the DB will never check the Repost conditions; subsequent reactions, even from the same Reactor, will.
 
 The marked issues are fixed by implementing a database over a non-permanent data structure.
 
