@@ -13,7 +13,7 @@
 		- a Count of the total number of reactions
 		- user id of Post's author
 		- user tag of Post's author
-		- the Post's id
+		- the repost's id
 		
 # On reaction to a Post in the Input channel:
 1. Check if the reaction

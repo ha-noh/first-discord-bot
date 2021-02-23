@@ -116,32 +116,39 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
 function insertIntoDb(msg) {
 	const values = [hallOfFame.getURLFromMsg(msg), 0, 0, msg.author.id, msg.author.tag];
-	db.run('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', values, (err)=>{
+	const insertSQL = `INSERT INTO posts (
+							url, 
+							flag, 
+							count, 
+							userid, 
+							usertag
+						) VALUES (?, ?, ?, ?, ?)`;
+
+	db.run(insertSQL, values, err => {
 		if(err) return console.error(err.message);
 		console.log(`A row has been inserted with rowid ${this.lastID}`);
 	});
 }
 
 function createHofTables() {
-	const postsSQL =
-	`CREATE TABLE IF NOT EXISTS posts (
-		url TEXT PRIMARY KEY,
-		flag INTEGER NOT NULL,
-		count INTEGER NOT NULL,
-		userid TEXT NOT NULL,
-		usertag TEXT NOT NULL
-	)`;
-	const reactionsSQL =
-	`CREATE TABLE IF NOT EXISTS reactions (
-		url TEXT NOT NULL,
-		userid TEXT NOT NULL,
-		usertag TEXT NOT NULL,
-		emoji TEXT NOT NULL,
-		FOREIGN KEY (url)
-			REFERENCES posts (url)
-			ON DELETE CASCADE
-			ON UPDATE NO ACTION
-	)`;
+	const postsSQL = `CREATE TABLE IF NOT EXISTS posts (
+							url TEXT PRIMARY KEY,
+							flag INTEGER NOT NULL,
+							count INTEGER NOT NULL,
+							userid TEXT NOT NULL,
+							usertag TEXT NOT NULL,
+							repostid TEXT
+						)`;
+	const reactionsSQL = `CREATE TABLE IF NOT EXISTS reactions (
+								url TEXT NOT NULL,
+								userid TEXT NOT NULL,
+								usertag TEXT NOT NULL,
+								emoji TEXT NOT NULL,
+								PRIMARY KEY (url, userid, emoji),
+								FOREIGN KEY (url) REFERENCES posts (url)
+									ON DELETE CASCADE
+									ON UPDATE NO ACTION
+							)`;
 
 	db.run(postsSQL, (err) => {
 		if(err) return console.error(err.message);

@@ -11,8 +11,8 @@ module.exports = {
 			if(err) return console.error(err.message);
 
 			if(!row) {
-				insertPost();
-				insertReaction(user.id, user.tag, reaction.emoji.name)
+				insertPost()
+					.then(insertReaction(user.id, user.tag, reaction.emoji.name))
 					.then(updatePostRecord(0, 1));
 			}
 			else {
@@ -23,9 +23,16 @@ module.exports = {
 		function insertPost() {
 			return new Promise(resolve => {
 				const values = [url, 0, 0, reaction.message.author.id, reaction.message.author.tag];
+				const insertSQL = `INSERT INTO posts (
+										url, 
+										flag, 
+										count, 
+										userid, 
+										usertag
+									) VALUES (?, ?, ?, ?, ?)`;
 
-				db.run('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', values, err => {
-					if(err) return console.error(err.message);
+				db.run(insertSQL, values, err => {
+					if(err) return console.error(err);
 
 					resolve(`A row has been inserted into posts with rowid ${this.lastID}`);
 				});
@@ -37,7 +44,7 @@ module.exports = {
 				const values = [url, id, tag, emoji];
 
 				db.run('INSERT INTO reactions VALUES (?, ?, ?, ?)', values, err => {
-					if(err) return console.error(err.message);
+					if(err) return console.error(err);
 
 					resolve(`A row has been inserted into reactions with rowid ${this.lastID}`);
 				});
@@ -51,10 +58,10 @@ module.exports = {
 								WHERE url = ?`;
 
 			db.get(selectPost, [url], (err, row) => {
-				if(err) return console.error(err.message);
+				if(err) return console.error(err);
 
 				db.run(updatePost, [flag, row.count + inc, url], err => {
-					if(err) return console.error(err.message);
+					if(err) return console.error(err);
 				});
 			});
 		}
@@ -82,13 +89,13 @@ module.exports = {
 		}
 
 		function getReactorCount() {
-			return new Promise ((resolve, reject) => {
+			return new Promise (resolve => {
 				const selectRows = `SELECT DISTINCT userid
 									FROM reactions
 									WHERE url = ?`;
 
 				db.all(selectRows, [url], (err, rows) => {
-					if(err) reject(err);
+					if(err) return console.error(err);
 
 					console.log('rows.length: ' + rows.length);
 					resolve(rows.length);
