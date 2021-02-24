@@ -52,22 +52,24 @@ module.exports = {
 		}
 
 		function updatePostRecord(flag, inc) {
-			const updatePost = `UPDATE posts
-								SET flag = ?,
-									count = ?
-								WHERE url = ?`;
+			return new Promise(resolve => {
+				const updatePost = `UPDATE posts
+									SET flag = ?,
+										count = ?
+									WHERE url = ?`;
 
-			db.get(selectPost, [url], (err, row) => {
-				if(err) return console.error(err);
-
-				db.run(updatePost, [flag, row.count + inc, url], err => {
+				db.get(selectPost, [url], (err, row) => {
 					if(err) return console.error(err);
+
+					db.run(updatePost, [flag, row.count + inc, url], err => {
+						if(err) return console.error(err);
+						resolve('A row has been updated with ' + this.changes);
+					});
 				});
 			});
 		}
 
 		async function checkRepostConditions(postRecord) {
-			const count = postRecord.count++;
 			const flag = postRecord.flag;
 
 			if(!flag) {
@@ -76,7 +78,7 @@ module.exports = {
 				checkReactionThreshold();
 			}
 			else {
-				updateEmoji();
+				updatePostRecord(1, 1).then(updateEmoji);
 			}
 		}
 
@@ -107,8 +109,23 @@ module.exports = {
 			console.log(url + ' emoji updated');
 		}
 
-		function repost() {
-			console.log(url + ' reposted');
+		async function repost() {
+			const entryNumber = await updatePostRecord(1, 0).then(countHofEntries);
+			// repost with usertag, original message, and url
+			const repostMsg = `Hall of Fame Entry #${entryNumber}`;
+			// add repost id to posts
+			console.log(repostMsg);
+		}
+
+		function countHofEntries() {
+			return new Promise((resolve, reject) => {
+
+				db.get('SELECT COUNT(*) AS count FROM posts WHERE flag = 1', [], (err, row) => {
+					if(err) return console.error(err);
+					if(row.count) resolve(row.count);
+					else reject('row.count is undefinted');
+				});
+			});
 		}
 	},
 

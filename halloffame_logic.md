@@ -2,19 +2,20 @@
 
 # Data storage:
 1. There are two tables in the DB; the Collection uses the attachment/embed Url as a primary key, while the List uses it as a foreign key
-	1. The "List": the first table has five columns
-		- Url (foreign key)
-		- user id of Reactor
-		- user tag of Reactor
-		- reaction emoji used
-	2. The "Collection": the second table has three columns
+	1. The "Post Collection", or "Collection" table has three columns
 		- its Url (primary key)
 		- a boolean Flag to track whether it's been reposted to the Output channel
 		- a Count of the total number of reactions
 		- user id of Post's author
 		- user tag of Post's author
 		- the repost's id
-		
+	2. The "Reactions List", or "List" table has five columns
+		- Url (foreign key)
+		- user id of Reactor
+		- user tag of Reactor
+		- reaction emoji used
+		- Primary key is (url, userid, emoji)
+
 # On reaction to a Post in the Input channel:
 1. Check if the reaction
 	- occurred in the correct channel,
@@ -28,19 +29,14 @@
 			- if the (number of unique reactors in the List) >= the Threshold, repost and set Flag to true
 		3. else if Flag is true, update the emoji reactions on the Output post
 
-3. Repost
-	1. Copy the Url and send a new message containing the Url in the Output channel
-	2. Tag the original poster and include the original message content in a quote
-	3. The Url is the identifier that allows the bot to
-		- reconstruct the list of flagged posts even after a restart
-		- link the post in the input Channel with its counterpart in the output Channel
-		- Note: This means that if multiple posts have the same Url, the reactions and Lists can become fragmented if not handled properly.
-	4. React to the Repost with number emojis that spell out the Count
+3. Repost to the Output Channel
+	1. Tag the original poster and include the original message content in a quote
+	2. Store the Repost's id to the Collection
+	3. React to the Repost with number emojis that spell out the Count
 
 # On Post to Input Channel:
 1. Check if its Url appears in the Collection
 	- if true, delete Post and post the error message "Sorry, this image/video has been posted already; your submission has been deleted"
-	- else, return
 
 # Corner Cases/Issues:
 1. ~~As previously mentioned, because the Post's embedded url is used as its key, duplicate urls within the Input channel can cause issues.~~
