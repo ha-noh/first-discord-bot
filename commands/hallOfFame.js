@@ -1,5 +1,5 @@
 module.exports = {
-	execute(reaction, user, db) {
+	execute(client, reaction, user, db) {
 		const { outputChannelID, reactionThreshold } = require('../config.json');
 		console.log(`Reaction: ${reaction.emoji.name} on ${reaction.message}`);
 		const url = this.getURLFromMsg(reaction.message);
@@ -13,7 +13,7 @@ module.exports = {
 			if(!row) {
 				insertPost()
 					.then(insertReaction(user.id, user.tag, reaction.emoji.name))
-					.then(updatePostRecord(0, 1));
+					.then(updatePostRecord(0, 1, null));
 			}
 			else {
 				checkRepostConditions(row);
@@ -51,17 +51,19 @@ module.exports = {
 			});
 		}
 
-		function updatePostRecord(flag, inc) {
+		function updatePostRecord(flag, inc, postid) {
 			return new Promise(resolve => {
 				const updatePost = `UPDATE posts
 									SET flag = ?,
-										count = ?
+										count = ?,
+										repostid = ?
 									WHERE url = ?`;
 
 				db.get(selectPost, [url], (err, row) => {
 					if(err) return console.error(err);
 
-					db.run(updatePost, [flag, row.count + inc, url], err => {
+					const id = postid ? postid : row.repostid;
+					db.run(updatePost, [flag, row.count + inc, id, url], err => {
 						if(err) return console.error(err);
 						resolve('A row has been updated with ' + this.changes);
 					});
@@ -69,24 +71,24 @@ module.exports = {
 			});
 		}
 
-		async function checkRepostConditions(postRecord) {
-			const flag = postRecord.flag;
+		async function checkRepostConditions(postRow) {
+			const flag = postRow.flag;
 
 			if(!flag) {
 				await insertReaction(user.id, user.tag, reaction.emoji.name);
-				updatePostRecord(0, 1);
-				checkReactionThreshold();
+				updatePostRecord(0, 1, null);
+				checkReactionThreshold(postRow);
 			}
 			else {
-				updatePostRecord(1, 1).then(updateEmoji);
+				updatePostRecord(1, 1, null).then(updateEmoji);
 			}
 		}
 
-		async function checkReactionThreshold() {
-			const reactorCount = await getReactorCount().catch(err => console.error(err));
+		async function checkReactionThreshold(postRow) {
+			const reactorCount = await getReactorCount().catch(console.error);
 
 			if(reactorCount >= reactionThreshold) {
-				repost();
+				repost(postRow);
 			}
 		}
 
@@ -109,21 +111,25 @@ module.exports = {
 			console.log(url + ' emoji updated');
 		}
 
-		async function repost() {
-			const entryNumber = await updatePostRecord(1, 0).then(countHofEntries);
+		async function repost(postRow) {
+			const entryNumber = await updatePostRecord(1, 0, null).then(countHofEntries);
+			const userTag = await client.users.fetch(postRow.userid).catch(console.error);
 			// repost with usertag, original message, and url
-			const repostMsg = `Hall of Fame Entry #${entryNumber}`;
+			const repostMsg =
+			`Hall of Fame Entry #${entryNumber}: \nArtist: ${userTag} \nArtwork: ${url}\`\`\`${reaction.message.content}\`\`\``;
+			client.channels.fetch(outputChannelID)
+				.then(channel => channel.send(repostMsg))
+				.then(msg => updatePostRecord(1, 0, msg.id))
+				.catch(console.error);
 			// add repost id to posts
-			console.log(repostMsg);
 		}
 
 		function countHofEntries() {
 			return new Promise((resolve, reject) => {
-
 				db.get('SELECT COUNT(*) AS count FROM posts WHERE flag = 1', [], (err, row) => {
 					if(err) return console.error(err);
 					if(row.count) resolve(row.count);
-					else reject('row.count is undefinted');
+					else reject('row.count is undefined');
 				});
 			});
 		}

@@ -111,7 +111,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	}
 	// the message has now been cached and is fully available
 	if(reaction.message.channel.id !== inputChannelID || !containsImageOrVideo(reaction.message)) return;
-	hallOfFame.execute(reaction, user, db);
+	hallOfFame.execute(client, reaction, user, db);
 });
 
 function insertIntoDb(msg) {
