@@ -1,4 +1,4 @@
-const { prefix, inputChannelID, outputChannelID } = require('./config.json');
+const { prefix, inputChannelID } = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] });
 client.commands = new Discord.Collection();

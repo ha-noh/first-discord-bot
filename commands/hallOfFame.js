@@ -106,7 +106,55 @@ module.exports = {
 		}
 
 		function updateEmoji() {
-			console.log(url + ' emoji updated');
+			db.get('SELECT count, repostid FROM posts WHERE url = ?', [url], (err, row) => {
+				if(err) return console.error(err);
+
+				let post;
+				client.channels.fetch(outputChannelID)
+					.then(channel => channel.messages.fetch(row.repostid))
+					.then(msg => {
+						post = msg;
+						msg.reactions.removeAll();
+					})
+					.catch(console.error);
+
+				const arr = [];
+
+				while(row.count > 0) {
+					arr.push(Math.floor(row.count % 10));
+					row.count = Math.floor(row.count / 10);
+				}
+
+				for(let i = arr.length - 1; i >= 0; i--) {
+					const emoji = getDigitEmoji(arr[i]);
+					post.react(emoji).catch(console.error);
+				}
+			});
+		}
+
+		function getDigitEmoji(num) {
+			switch(num) {
+			case 0:
+				return '0️⃣';
+			case 1:
+				return '1️⃣';
+			case 2:
+				return '2️⃣';
+			case 3:
+				return '3️⃣';
+			case 4:
+				return '4️⃣';
+			case 5:
+				return '5️⃣';
+			case 6:
+				return '6️⃣';
+			case 7:
+				return '7️⃣';
+			case 8:
+				return '8️⃣';
+			case 9:
+				return '9️⃣';
+			}
 		}
 
 		async function repost(postRow) {
