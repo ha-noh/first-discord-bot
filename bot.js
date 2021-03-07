@@ -4,7 +4,7 @@ const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION', 'USER'] })
 client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
 
-const hallOfFame = require('./commands/hallOfFame.js');
+const hallOfFame = require('./hallOfFame.js');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('db/halloffame.db', (err) => {
 	if(err) return console.error(err.message);
@@ -162,6 +162,11 @@ function createHofTables() {
 // the image preview created by attachments are not considered embeds
 function containsImageOrVideo(msg) {
 	return Boolean(msg.embeds.length || msg.attachments.size);
+}
+
+function dropTables() {
+	db.run('DROP TABLE posts', [], err => { if(err) console.error(err); });
+	db.run('DROP TABLE reactions', [], err => { if(err) console.error(err); });
 }
 
 require('dotenv').config();

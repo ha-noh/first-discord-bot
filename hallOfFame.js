@@ -1,6 +1,6 @@
 module.exports = {
 	execute(client, reaction, user, db) {
-		const { outputChannelID, reactionThreshold } = require('../config.json');
+		const { outputChannelID, reactionThreshold } = require('./config.json');
 		console.log(`Reaction: ${reaction.emoji.name} on ${reaction.message}`);
 		const url = this.getURLFromMsg(reaction.message);
 		const selectPost = `SELECT *
@@ -8,7 +8,7 @@ module.exports = {
 							WHERE url = ?`;
 
 		db.get(selectPost, [url], (err, row) => {
-			if(err) return console.error(err.message);
+			if(err) return console.error(err);
 
 			if(!row) {
 				insertPost()
